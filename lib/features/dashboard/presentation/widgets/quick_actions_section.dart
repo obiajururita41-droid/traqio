@@ -3,6 +3,7 @@ import 'package:traqio/core/theme/app_spacing.dart';
 import 'package:traqio/features/customers/presentation/screens/customer_list_screen.dart';
 import 'package:traqio/features/products/presentation/screens/product_list_screen.dart';
 import 'package:traqio/features/stock_movements/presentation/screens/movement_history_screen.dart';
+import 'package:traqio/features/suppliers/presentation/screens/supplier_list_screen.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
@@ -25,8 +26,11 @@ class QuickActionsSection extends StatelessWidget {
       _QuickAction(icon: Icons.person_add_alt_rounded, label: 'Add Customer', onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomerListScreen()));
       }),
+      _QuickAction(icon: Icons.local_shipping_rounded, label: 'Suppliers', onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupplierListScreen()));
+      }),
       _QuickAction(icon: Icons.shopping_cart_checkout_rounded, label: 'Create P.O.', onTap: () => _comingSoon(context, 'Create P.O.')),
-      _QuickAction(icon: Icons.local_shipping_rounded, label: 'Track Shipment', onTap: () => _comingSoon(context, 'Track Shipment')),
+      _QuickAction(icon: Icons.map_rounded, label: 'Track Shipment', onTap: () => _comingSoon(context, 'Track Shipment')),
       _QuickAction(icon: Icons.bar_chart_rounded, label: 'View Reports', onTap: () => _comingSoon(context, 'View Reports')),
     ];
 
