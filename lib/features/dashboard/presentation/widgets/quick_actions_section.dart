@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:traqio/core/theme/app_spacing.dart';
+import 'package:traqio/features/products/presentation/screens/product_list_screen.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
-
-  static const _actions = [
-    _QuickAction(icon: Icons.point_of_sale_rounded, label: 'New Sale'),
-    _QuickAction(icon: Icons.add_box_rounded, label: 'Add Product'),
-    _QuickAction(icon: Icons.add_circle_outline_rounded, label: 'Add Stock'),
-    _QuickAction(icon: Icons.receipt_long_rounded, label: 'Create Invoice'),
-    _QuickAction(icon: Icons.person_add_alt_rounded, label: 'Add Customer'),
-    _QuickAction(icon: Icons.shopping_cart_checkout_rounded, label: 'Create P.O.'),
-    _QuickAction(icon: Icons.local_shipping_rounded, label: 'Track Shipment'),
-    _QuickAction(icon: Icons.bar_chart_rounded, label: 'View Reports'),
-  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final width = MediaQuery.sizeOf(context).width;
     final columns = width > 600 ? 4 : 3;
+
+    final actions = [
+      _QuickAction(icon: Icons.point_of_sale_rounded, label: 'New Sale', onTap: () => _comingSoon(context, 'New Sale')),
+      _QuickAction(icon: Icons.add_box_rounded, label: 'Add Product', onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProductListScreen()));
+      }),
+      _QuickAction(icon: Icons.add_circle_outline_rounded, label: 'Add Stock', onTap: () => _comingSoon(context, 'Add Stock')),
+      _QuickAction(icon: Icons.receipt_long_rounded, label: 'Create Invoice', onTap: () => _comingSoon(context, 'Create Invoice')),
+      _QuickAction(icon: Icons.person_add_alt_rounded, label: 'Add Customer', onTap: () => _comingSoon(context, 'Add Customer')),
+      _QuickAction(icon: Icons.shopping_cart_checkout_rounded, label: 'Create P.O.', onTap: () => _comingSoon(context, 'Create P.O.')),
+      _QuickAction(icon: Icons.local_shipping_rounded, label: 'Track Shipment', onTap: () => _comingSoon(context, 'Track Shipment')),
+      _QuickAction(icon: Icons.bar_chart_rounded, label: 'View Reports', onTap: () => _comingSoon(context, 'View Reports')),
+    ];
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -42,16 +45,12 @@ class QuickActionsSection extends StatelessWidget {
               crossAxisSpacing: AppSpacing.md,
               childAspectRatio: 0.95,
             ),
-            itemCount: _actions.length,
+            itemCount: actions.length,
             itemBuilder: (context, index) {
-              final action = _actions[index];
+              final action = actions[index];
               return InkWell(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${action.label} — coming soon')),
-                  );
-                },
+                onTap: action.onTap,
                 child: Container(
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest,
@@ -74,10 +73,17 @@ class QuickActionsSection extends StatelessWidget {
       ),
     );
   }
+
+  static void _comingSoon(BuildContext context, String label) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$label — coming soon')),
+    );
+  }
 }
 
 class _QuickAction {
   final IconData icon;
   final String label;
-  const _QuickAction({required this.icon, required this.label});
+  final VoidCallback onTap;
+  const _QuickAction({required this.icon, required this.label, required this.onTap});
 }
