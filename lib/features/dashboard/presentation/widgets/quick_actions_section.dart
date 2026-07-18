@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:traqio/core/theme/app_spacing.dart';
 import 'package:traqio/features/products/presentation/screens/product_list_screen.dart';
+import 'package:traqio/features/stock_movements/presentation/screens/movement_history_screen.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
@@ -16,7 +17,9 @@ class QuickActionsSection extends StatelessWidget {
       _QuickAction(icon: Icons.add_box_rounded, label: 'Add Product', onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProductListScreen()));
       }),
-      _QuickAction(icon: Icons.add_circle_outline_rounded, label: 'Add Stock', onTap: () => _comingSoon(context, 'Add Stock')),
+      _QuickAction(icon: Icons.add_circle_outline_rounded, label: 'Add Stock', onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MovementHistoryScreen()));
+      }),
       _QuickAction(icon: Icons.receipt_long_rounded, label: 'Create Invoice', onTap: () => _comingSoon(context, 'Create Invoice')),
       _QuickAction(icon: Icons.person_add_alt_rounded, label: 'Add Customer', onTap: () => _comingSoon(context, 'Add Customer')),
       _QuickAction(icon: Icons.shopping_cart_checkout_rounded, label: 'Create P.O.', onTap: () => _comingSoon(context, 'Create P.O.')),

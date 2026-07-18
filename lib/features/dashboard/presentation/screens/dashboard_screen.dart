@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:traqio/core/theme/app_spacing.dart';
 import 'package:traqio/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:traqio/features/dashboard/presentation/widgets/dashboard_header.dart';
@@ -10,6 +11,7 @@ import 'package:traqio/features/dashboard/presentation/widgets/recent_activity_s
 import 'package:traqio/features/dashboard/presentation/widgets/sales_chart_card.dart';
 import 'package:traqio/features/dashboard/presentation/widgets/shipment_overview_section.dart';
 import 'package:traqio/features/dashboard/presentation/widgets/stat_card.dart';
+import 'package:traqio/features/stock_movements/presentation/providers/inventory_providers.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -18,6 +20,8 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final summaryAsync = ref.watch(dashboardSummaryProvider);
+    final valuationAsync = ref.watch(stockValuationProvider);
+    final currency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
     final width = MediaQuery.sizeOf(context).width;
     final statColumns = width > 900 ? 4 : (width > 600 ? 2 : 1);
 
@@ -31,6 +35,7 @@ class DashboardScreen extends ConsumerWidget {
             ref.invalidate(shipmentOverviewProvider);
             ref.invalidate(lowStockProductsProvider);
             ref.invalidate(performanceSummaryProvider);
+            ref.invalidate(stockValuationProvider);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -58,23 +63,41 @@ class DashboardScreen extends ConsumerWidget {
                         isPositive: summary.todaysSales.isPositive,
                         accentColor: theme.colorScheme.primary,
                       ),
-                      StatCard(
-                        icon: Icons.inventory_2_rounded,
-                        title: summary.inventoryValue.title,
-                        value: summary.inventoryValue.value,
-                        description: summary.inventoryValue.description,
-                        percentageChange: summary.inventoryValue.percentageChange,
-                        isPositive: summary.inventoryValue.isPositive,
-                        accentColor: Colors.blue,
+                      // Inventory Value — now backed by real stock valuation
+                      valuationAsync.when(
+                        data: (valuation) => StatCard(
+                          icon: Icons.inventory_2_rounded,
+                          title: 'Inventory Value',
+                          value: currency.format(valuation.totalStockValue),
+                          description: '${valuation.totalProductCount} products tracked',
+                          percentageChange: 0,
+                          isPositive: true,
+                          accentColor: Colors.blue,
+                        ),
+                        loading: () => const _CardSkeleton(),
+                        error: (e, st) => const StatCard(
+                          icon: Icons.inventory_2_rounded,
+                          title: 'Inventory Value',
+                          value: '—',
+                          description: 'Could not load',
+                          percentageChange: 0,
+                          isPositive: true,
+                          accentColor: Colors.blue,
+                        ),
                       ),
-                      StatCard(
-                        icon: Icons.warning_amber_rounded,
-                        title: summary.lowStockAlerts.title,
-                        value: summary.lowStockAlerts.value,
-                        description: summary.lowStockAlerts.description,
-                        percentageChange: summary.lowStockAlerts.percentageChange,
-                        isPositive: summary.lowStockAlerts.isPositive,
-                        accentColor: Colors.orange,
+                      // Low Stock Alerts — now backed by real product counts
+                      valuationAsync.when(
+                        data: (valuation) => StatCard(
+                          icon: Icons.warning_amber_rounded,
+                          title: 'Low Stock Alerts',
+                          value: '${valuation.lowStockCount}',
+                          description: 'products need restocking',
+                          percentageChange: 0,
+                          isPositive: valuation.lowStockCount == 0,
+                          accentColor: Colors.orange,
+                        ),
+                        loading: () => const _CardSkeleton(),
+                        error: (e, st) => const _CardSkeleton(),
                       ),
                       StatCard(
                         icon: Icons.receipt_long_rounded,
@@ -111,6 +134,23 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CardSkeleton extends StatelessWidget {
+  const _CardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
+      ),
+      child: const Center(child: CircularProgressIndicator()),
     );
   }
 }
