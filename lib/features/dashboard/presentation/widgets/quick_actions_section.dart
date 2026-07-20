@@ -3,6 +3,7 @@ import 'package:traqio/core/theme/app_spacing.dart';
 import 'package:traqio/features/customers/presentation/screens/customer_list_screen.dart';
 import 'package:traqio/features/products/presentation/screens/product_list_screen.dart';
 import 'package:traqio/features/purchase_orders/presentation/screens/purchase_order_list_screen.dart';
+import 'package:traqio/features/sales_orders/presentation/screens/sales_order_list_screen.dart';
 import 'package:traqio/features/stock_movements/presentation/screens/movement_history_screen.dart';
 import 'package:traqio/features/suppliers/presentation/screens/supplier_list_screen.dart';
 
@@ -16,7 +17,9 @@ class QuickActionsSection extends StatelessWidget {
     final columns = width > 600 ? 4 : 3;
 
     final actions = [
-      _QuickAction(icon: Icons.point_of_sale_rounded, label: 'New Sale', onTap: () => _comingSoon(context, 'New Sale')),
+      _QuickAction(icon: Icons.point_of_sale_rounded, label: 'New Sale', onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SalesOrderListScreen()));
+      }),
       _QuickAction(icon: Icons.add_box_rounded, label: 'Add Product', onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProductListScreen()));
       }),
