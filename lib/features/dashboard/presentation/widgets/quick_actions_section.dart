@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:traqio/core/theme/app_spacing.dart';
 import 'package:traqio/features/customers/presentation/screens/customer_list_screen.dart';
+import 'package:traqio/features/invoices/presentation/screens/invoice_list_screen.dart';
 import 'package:traqio/features/products/presentation/screens/product_list_screen.dart';
 import 'package:traqio/features/purchase_orders/presentation/screens/purchase_order_list_screen.dart';
 import 'package:traqio/features/sales_orders/presentation/screens/sales_order_list_screen.dart';
@@ -26,7 +27,9 @@ class QuickActionsSection extends StatelessWidget {
       _QuickAction(icon: Icons.add_circle_outline_rounded, label: 'Add Stock', onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MovementHistoryScreen()));
       }),
-      _QuickAction(icon: Icons.receipt_long_rounded, label: 'Create Invoice', onTap: () => _comingSoon(context, 'Create Invoice')),
+      _QuickAction(icon: Icons.receipt_long_rounded, label: 'Invoices', onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const InvoiceListScreen()));
+      }),
       _QuickAction(icon: Icons.person_add_alt_rounded, label: 'Add Customer', onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomerListScreen()));
       }),

@@ -12,6 +12,7 @@ import 'package:traqio/features/sales_orders/presentation/providers/sales_order_
 import 'package:traqio/features/sales_orders/presentation/providers/sales_order_providers.dart';
 import 'package:traqio/features/sales_orders/presentation/screens/sales_order_form_screen.dart';
 import 'package:traqio/features/sales_orders/presentation/widgets/so_status_badge.dart';
+import 'package:traqio/features/invoices/presentation/screens/generate_invoice_screen.dart';
 
 class SalesOrderDetailScreen extends ConsumerWidget {
   final String soId;
@@ -143,6 +144,38 @@ class SalesOrderDetailScreen extends ConsumerWidget {
                     onPressed: () => _openFulfillSheet(context, ref, so),
                     icon: const Icon(Icons.local_shipping_outlined),
                     label: const Text('Fulfill Items'),
+                  ),
+                ),
+              ],
+              if (so.status == SalesOrderStatus.fulfilled ||
+                  so.status == SalesOrderStatus.partiallyFulfilled) ...[
+                const SizedBox(height: AppSpacing.md),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => GenerateInvoiceScreen(salesOrder: so)),
+                      );
+                    },
+                    icon: const Icon(Icons.receipt_long_outlined),
+                    label: const Text('Generate Invoice'),
+                  ),
+                ),
+              ],
+              if (so.status == SalesOrderStatus.fulfilled ||
+                  so.status == SalesOrderStatus.partiallyFulfilled) ...[
+                const SizedBox(height: AppSpacing.md),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => GenerateInvoiceScreen(salesOrder: so)),
+                      );
+                    },
+                    icon: const Icon(Icons.receipt_long_outlined),
+                    label: const Text('Generate Invoice'),
                   ),
                 ),
               ],
