@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:traqio/core/theme/app_spacing.dart';
 import 'package:traqio/features/customers/presentation/screens/customer_list_screen.dart';
 import 'package:traqio/features/invoices/presentation/screens/invoice_list_screen.dart';
+import 'package:traqio/features/payments/presentation/screens/payment_list_screen.dart';
 import 'package:traqio/features/products/presentation/screens/product_list_screen.dart';
 import 'package:traqio/features/purchase_orders/presentation/screens/purchase_order_list_screen.dart';
 import 'package:traqio/features/sales_orders/presentation/screens/sales_order_list_screen.dart';
@@ -38,6 +39,9 @@ class QuickActionsSection extends StatelessWidget {
       }),
       _QuickAction(icon: Icons.shopping_cart_checkout_rounded, label: 'Create P.O.', onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PurchaseOrderListScreen()));
+      }),
+      _QuickAction(icon: Icons.payments_rounded, label: 'Payments', onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PaymentListScreen()));
       }),
       _QuickAction(icon: Icons.map_rounded, label: 'Track Shipment', onTap: () => _comingSoon(context, 'Track Shipment')),
       _QuickAction(icon: Icons.bar_chart_rounded, label: 'View Reports', onTap: () => _comingSoon(context, 'View Reports')),

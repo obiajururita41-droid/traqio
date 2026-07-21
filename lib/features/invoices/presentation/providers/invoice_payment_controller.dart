@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:traqio/core/enums/payment_method.dart';
 import 'package:traqio/core/errors/failures.dart';
 import 'package:traqio/features/customers/presentation/providers/customer_providers.dart';
 import 'package:traqio/features/invoices/domain/entities/invoice.dart';
-import 'package:traqio/features/invoices/domain/entities/invoice_enums.dart';
 import 'package:traqio/features/invoices/presentation/providers/invoice_providers.dart';
 
 sealed class InvoicePaymentState {

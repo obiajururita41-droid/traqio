@@ -1,4 +1,4 @@
-import 'package:traqio/features/invoices/domain/entities/invoice_enums.dart';
+import 'package:traqio/core/enums/payment_method.dart';
 import 'package:traqio/features/invoices/domain/entities/invoice_payment.dart';
 
 class InvoicePaymentModel extends InvoicePayment {

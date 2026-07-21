@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:traqio/features/invoices/domain/entities/invoice_enums.dart';
+import 'package:traqio/core/enums/payment_method.dart';
 
 class InvoicePayment extends Equatable {
   final String id;

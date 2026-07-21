@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:traqio/core/enums/payment_method.dart';
 import 'package:traqio/core/errors/exceptions.dart';
 import 'package:traqio/features/invoices/data/models/invoice_model.dart';
 import 'package:traqio/features/invoices/data/models/invoice_payment_model.dart';
