@@ -5,16 +5,11 @@ import 'package:traqio/features/stock_movements/domain/entities/movement_type.da
 
 class InventoryRemoteDataSource {
   final SupabaseClient client;
-  const InventoryRemoteDataSource(this.client);
+  final String businessId;
+  const InventoryRemoteDataSource(this.client, this.businessId);
 
   static const _movementsTable = 'inventory_movements';
   static const _productsTable = 'products';
-
-  String get _businessId {
-    final id = client.auth.currentUser?.id;
-    if (id == null) throw ServerException('No authenticated user.');
-    return id;
-  }
 
   /// Calls the atomic RPC — never inserts into inventory_movements
   /// directly. This guarantees the movement log and the product's
@@ -35,6 +30,7 @@ class InventoryRemoteDataSource {
   }) async {
     try {
       final row = await client.rpc('create_inventory_movement', params: {
+        'p_business_id': businessId,
         'p_product_id': productId,
         'p_warehouse_id': warehouseId,
         'p_movement_type': movementType.dbValue,
@@ -59,7 +55,7 @@ class InventoryRemoteDataSource {
       var query = client
           .from(_movementsTable)
           .select()
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
       if (productId != null) {
         query = query.eq('product_id', productId);
       }
@@ -78,7 +74,7 @@ class InventoryRemoteDataSource {
       final rows = await client
           .from(_movementsTable)
           .select()
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .eq('reference_type', referenceType.dbValue)
           .eq('reference_id', referenceId)
           .order('created_at', ascending: false);
@@ -98,7 +94,7 @@ class InventoryRemoteDataSource {
       final rows = await client
           .from(_productsTable)
           .select('current_stock, cost_price, minimum_stock, reorder_level')
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
 
       double totalValue = 0;
       int lowStockCount = 0;

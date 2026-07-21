@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:traqio/core/business/current_business_provider.dart';
 import 'package:traqio/core/config/supabase_config.dart';
 import 'package:traqio/features/suppliers/data/datasources/supplier_remote_datasource.dart';
 import 'package:traqio/features/suppliers/data/repositories/supplier_repository_impl.dart';
@@ -7,7 +8,7 @@ import 'package:traqio/features/suppliers/domain/repositories/supplier_repositor
 import 'package:traqio/features/suppliers/domain/usecases/supplier_usecases.dart';
 
 final supplierRemoteDataSourceProvider = Provider<SupplierRemoteDataSource>((ref) {
-  return SupplierRemoteDataSource(SupabaseConfig.client);
+  return SupplierRemoteDataSource(SupabaseConfig.client, ref.watch(currentBusinessIdProvider));
 });
 
 final supplierRepositoryProvider = Provider<SupplierRepository>((ref) {

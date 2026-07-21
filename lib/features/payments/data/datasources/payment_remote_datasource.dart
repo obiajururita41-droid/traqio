@@ -6,17 +6,13 @@ import 'package:traqio/features/payments/domain/entities/payment_enums.dart';
 
 class PaymentRemoteDataSource {
   final SupabaseClient client;
-  const PaymentRemoteDataSource(this.client);
+  final String businessId;
+  const PaymentRemoteDataSource(this.client, this.businessId);
 
   static const _table = 'payments';
   static const _selectWithJoins =
       '*, customers(name), suppliers(name), invoices(invoice_number)';
 
-  String get _businessId {
-    final id = client.auth.currentUser?.id;
-    if (id == null) throw ServerException('No authenticated user.');
-    return id;
-  }
 
   Future<List<PaymentModel>> getPayments({
     PaymentType? typeFilter,
@@ -29,7 +25,7 @@ class PaymentRemoteDataSource {
       var query = client
           .from(_table)
           .select(_selectWithJoins)
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
 
       if (typeFilter != null) {
         query = query.eq('payment_type', typeFilter.dbValue);
@@ -58,7 +54,7 @@ class PaymentRemoteDataSource {
           .from(_table)
           .select(_selectWithJoins)
           .eq('id', id)
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .single();
       return PaymentModel.fromJson(row);
     } catch (e) {
@@ -76,6 +72,7 @@ class PaymentRemoteDataSource {
   }) async {
     try {
       final row = await client.rpc('record_customer_payment', params: {
+        'p_business_id': businessId,
         'p_customer_id': customerId,
         'p_amount': amount,
         'p_payment_method': paymentMethod?.dbValue,
@@ -100,6 +97,7 @@ class PaymentRemoteDataSource {
   }) async {
     try {
       final row = await client.rpc('record_supplier_payment', params: {
+        'p_business_id': businessId,
         'p_supplier_id': supplierId,
         'p_amount': amount,
         'p_payment_method': paymentMethod?.dbValue,
@@ -122,7 +120,7 @@ class PaymentRemoteDataSource {
       final rows = await client
           .from(_table)
           .select('payment_type, amount')
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .gte('payment_date', monthStart);
 
       double received = 0;

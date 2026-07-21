@@ -7,18 +7,14 @@ import 'package:traqio/features/invoices/domain/entities/invoice_enums.dart';
 
 class InvoiceRemoteDataSource {
   final SupabaseClient client;
-  const InvoiceRemoteDataSource(this.client);
+  final String businessId;
+  const InvoiceRemoteDataSource(this.client, this.businessId);
 
   static const _table = 'invoices';
   static const _paymentsTable = 'invoice_payments';
   static const _selectWithJoins =
       '*, customers(name), sales_orders(so_number), invoice_items(*)';
 
-  String get _businessId {
-    final id = client.auth.currentUser?.id;
-    if (id == null) throw ServerException('No authenticated user.');
-    return id;
-  }
 
   Future<List<InvoiceModel>> getInvoices({
     InvoiceStatus? statusFilter,
@@ -31,7 +27,7 @@ class InvoiceRemoteDataSource {
       var query = client
           .from(_table)
           .select(_selectWithJoins)
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
 
       if (statusFilter != null) {
         query = query.eq('status', statusFilter.dbValue);
@@ -58,7 +54,7 @@ class InvoiceRemoteDataSource {
           .from(_table)
           .select(_selectWithJoins)
           .eq('id', id)
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .single();
       return InvoiceModel.fromJson(row);
     } catch (e) {
@@ -74,6 +70,7 @@ class InvoiceRemoteDataSource {
   }) async {
     try {
       final row = await client.rpc('generate_invoice_from_sales_order', params: {
+        'p_business_id': businessId,
         'p_so_id': salesOrderId,
         'p_invoice_number': invoiceNumber,
         'p_due_date': dueDate?.toIso8601String(),
@@ -88,7 +85,7 @@ class InvoiceRemoteDataSource {
 
   Future<InvoiceModel> markAsSent(String id) async {
     try {
-      await client.rpc('mark_invoice_sent', params: {'p_invoice_id': id});
+      await client.rpc('mark_invoice_sent', params: {'p_business_id': businessId, 'p_invoice_id': id});
       return getInvoiceById(id);
     } catch (e) {
       throw ServerException(e.toString());
@@ -97,7 +94,7 @@ class InvoiceRemoteDataSource {
 
   Future<InvoiceModel> cancelInvoice(String id) async {
     try {
-      await client.rpc('cancel_invoice', params: {'p_invoice_id': id});
+      await client.rpc('cancel_invoice', params: {'p_business_id': businessId, 'p_invoice_id': id});
       return getInvoiceById(id);
     } catch (e) {
       throw ServerException(e.toString());
@@ -113,6 +110,7 @@ class InvoiceRemoteDataSource {
   }) async {
     try {
       await client.rpc('record_invoice_payment', params: {
+        'p_business_id': businessId,
         'p_invoice_id': invoiceId,
         'p_amount': amount,
         'p_payment_method': paymentMethod?.dbValue,
@@ -130,7 +128,7 @@ class InvoiceRemoteDataSource {
       final rows = await client
           .from(_paymentsTable)
           .select()
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .eq('invoice_id', invoiceId)
           .order('payment_date', ascending: false);
       return (rows as List)
@@ -146,7 +144,7 @@ class InvoiceRemoteDataSource {
       final rows = await client
           .from(_table)
           .select('status, due_date, total_amount, paid_amount')
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .not('status', 'in', '(paid,cancelled)');
 
       int outstandingCount = 0;

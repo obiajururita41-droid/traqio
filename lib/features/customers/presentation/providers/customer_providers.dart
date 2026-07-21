@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:traqio/core/business/current_business_provider.dart';
 import 'package:traqio/core/config/supabase_config.dart';
 import 'package:traqio/features/customers/data/datasources/customer_remote_datasource.dart';
 import 'package:traqio/features/customers/data/repositories/customer_repository_impl.dart';
@@ -7,7 +8,7 @@ import 'package:traqio/features/customers/domain/repositories/customer_repositor
 import 'package:traqio/features/customers/domain/usecases/customer_usecases.dart';
 
 final customerRemoteDataSourceProvider = Provider<CustomerRemoteDataSource>((ref) {
-  return CustomerRemoteDataSource(SupabaseConfig.client);
+  return CustomerRemoteDataSource(SupabaseConfig.client, ref.watch(currentBusinessIdProvider));
 });
 
 final customerRepositoryProvider = Provider<CustomerRepository>((ref) {

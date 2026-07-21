@@ -7,23 +7,18 @@ import 'package:traqio/features/customers/domain/entities/customer_enums.dart';
 
 class CustomerRemoteDataSource {
   final SupabaseClient client;
-  const CustomerRemoteDataSource(this.client);
+  final String businessId;
+  const CustomerRemoteDataSource(this.client, this.businessId);
 
   static const _customersTable = 'customers';
   static const _ledgerTable = 'customer_ledger_entries';
-
-  String get _businessId {
-    final id = client.auth.currentUser?.id;
-    if (id == null) throw ServerException('No authenticated user.');
-    return id;
-  }
 
   Future<List<CustomerModel>> getCustomers() async {
     try {
       final rows = await client
           .from(_customersTable)
           .select()
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .order('created_at', ascending: false);
       return (rows as List)
           .map((row) => CustomerModel.fromJson(row as Map<String, dynamic>))
@@ -39,7 +34,7 @@ class CustomerRemoteDataSource {
           .from(_customersTable)
           .select()
           .eq('id', id)
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .single();
       return CustomerModel.fromJson(row);
     } catch (e) {
@@ -52,7 +47,7 @@ class CustomerRemoteDataSource {
       final payload = CustomerModel.fromEntity(customer).toJson()
         ..remove('id')
         ..remove('outstanding_balance') // always starts at 0, set by DB default
-        ..['business_id'] = _businessId;
+        ..['business_id'] = businessId;
       final row = await client.from(_customersTable).insert(payload).select().single();
       return CustomerModel.fromJson(row);
     } catch (e) {
@@ -69,7 +64,7 @@ class CustomerRemoteDataSource {
           .from(_customersTable)
           .update(payload)
           .eq('id', customer.id)
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .select()
           .single();
       return CustomerModel.fromJson(row);
@@ -84,7 +79,7 @@ class CustomerRemoteDataSource {
           .from(_customersTable)
           .delete()
           .eq('id', id)
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -95,7 +90,7 @@ class CustomerRemoteDataSource {
       final rows = await client
           .from(_customersTable)
           .select()
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .or('name.ilike.%$query%,phone.ilike.%$query%,email.ilike.%$query%');
       return (rows as List)
           .map((row) => CustomerModel.fromJson(row as Map<String, dynamic>))
@@ -116,6 +111,7 @@ class CustomerRemoteDataSource {
   }) async {
     try {
       final row = await client.rpc('create_customer_ledger_entry', params: {
+        'p_business_id': businessId,
         'p_customer_id': customerId,
         'p_entry_type': entryType.dbValue,
         'p_direction': direction.dbValue,
@@ -135,7 +131,7 @@ class CustomerRemoteDataSource {
       final rows = await client
           .from(_ledgerTable)
           .select()
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .eq('customer_id', customerId)
           .order('created_at', ascending: false);
       return (rows as List)

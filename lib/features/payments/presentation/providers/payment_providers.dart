@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:traqio/core/business/current_business_provider.dart';
 import 'package:traqio/core/config/supabase_config.dart';
 import 'package:traqio/core/utils/result.dart';
 import 'package:traqio/features/payments/data/datasources/payment_remote_datasource.dart';
@@ -9,7 +10,7 @@ import 'package:traqio/features/payments/domain/repositories/payment_repository.
 import 'package:traqio/features/payments/domain/usecases/payment_usecases.dart';
 
 final paymentRemoteDataSourceProvider = Provider<PaymentRemoteDataSource>((ref) {
-  return PaymentRemoteDataSource(SupabaseConfig.client);
+  return PaymentRemoteDataSource(SupabaseConfig.client, ref.watch(currentBusinessIdProvider));
 });
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {

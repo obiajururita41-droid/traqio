@@ -6,17 +6,13 @@ import 'package:traqio/features/sales_orders/domain/entities/so_enums.dart';
 
 class SalesOrderRemoteDataSource {
   final SupabaseClient client;
-  const SalesOrderRemoteDataSource(this.client);
+  final String businessId;
+  const SalesOrderRemoteDataSource(this.client, this.businessId);
 
   static const _table = 'sales_orders';
   static const _selectWithJoins =
       '*, customers(name), sales_order_items(*, products(name))';
 
-  String get _businessId {
-    final id = client.auth.currentUser?.id;
-    if (id == null) throw ServerException('No authenticated user.');
-    return id;
-  }
 
   Future<List<SalesOrderModel>> getSalesOrders({
     SalesOrderStatus? statusFilter,
@@ -29,7 +25,7 @@ class SalesOrderRemoteDataSource {
       var query = client
           .from(_table)
           .select(_selectWithJoins)
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
 
       if (statusFilter != null) {
         query = query.eq('status', statusFilter.dbValue);
@@ -56,7 +52,7 @@ class SalesOrderRemoteDataSource {
           .from(_table)
           .select(_selectWithJoins)
           .eq('id', id)
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .single();
       return SalesOrderModel.fromJson(row);
     } catch (e) {
@@ -81,6 +77,7 @@ class SalesOrderRemoteDataSource {
   }) async {
     try {
       final row = await client.rpc('create_sales_order', params: {
+        'p_business_id': businessId,
         'p_customer_id': customerId,
         'p_so_number': soNumber,
         'p_order_date': orderDate.toIso8601String(),
@@ -105,6 +102,7 @@ class SalesOrderRemoteDataSource {
   }) async {
     try {
       await client.rpc('update_sales_order_draft', params: {
+        'p_business_id': businessId,
         'p_so_id': id,
         'p_customer_id': customerId,
         'p_order_date': orderDate.toIso8601String(),
@@ -120,7 +118,7 @@ class SalesOrderRemoteDataSource {
 
   Future<SalesOrderModel> confirmSalesOrder(String id) async {
     try {
-      await client.rpc('confirm_sales_order', params: {'p_so_id': id});
+      await client.rpc('confirm_sales_order', params: {'p_business_id': businessId, 'p_so_id': id});
       return getSalesOrderById(id);
     } catch (e) {
       throw ServerException(e.toString());
@@ -129,7 +127,7 @@ class SalesOrderRemoteDataSource {
 
   Future<SalesOrderModel> cancelSalesOrder(String id) async {
     try {
-      await client.rpc('cancel_sales_order', params: {'p_so_id': id});
+      await client.rpc('cancel_sales_order', params: {'p_business_id': businessId, 'p_so_id': id});
       return getSalesOrderById(id);
     } catch (e) {
       throw ServerException(e.toString());
@@ -142,6 +140,7 @@ class SalesOrderRemoteDataSource {
   }) async {
     try {
       await client.rpc('fulfill_sales_order_items', params: {
+        'p_business_id': businessId,
         'p_so_id': soId,
         'p_fulfillments': fulfillments
             .map((f) => {
@@ -161,7 +160,7 @@ class SalesOrderRemoteDataSource {
       final rows = await client
           .from(_table)
           .select('status, expected_delivery_date, total_amount')
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .not('status', 'in', '(fulfilled,cancelled)');
 
       int openCount = 0;

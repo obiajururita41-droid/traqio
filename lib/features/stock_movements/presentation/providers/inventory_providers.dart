@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:traqio/core/business/current_business_provider.dart';
 import 'package:traqio/core/config/supabase_config.dart';
 import 'package:traqio/features/products/presentation/providers/product_providers.dart';
 import 'package:traqio/features/stock_movements/data/datasources/inventory_remote_datasource.dart';
@@ -8,7 +9,7 @@ import 'package:traqio/features/stock_movements/domain/repositories/inventory_re
 import 'package:traqio/features/stock_movements/domain/usecases/inventory_usecases.dart';
 
 final inventoryRemoteDataSourceProvider = Provider<InventoryRemoteDataSource>((ref) {
-  return InventoryRemoteDataSource(SupabaseConfig.client);
+  return InventoryRemoteDataSource(SupabaseConfig.client, ref.watch(currentBusinessIdProvider));
 });
 
 final inventoryRepositoryProvider = Provider<InventoryRepository>((ref) {

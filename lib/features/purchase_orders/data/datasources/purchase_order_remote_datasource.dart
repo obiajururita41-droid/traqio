@@ -6,17 +6,13 @@ import 'package:traqio/features/purchase_orders/domain/entities/purchase_order_i
 
 class PurchaseOrderRemoteDataSource {
   final SupabaseClient client;
-  const PurchaseOrderRemoteDataSource(this.client);
+  final String businessId;
+  const PurchaseOrderRemoteDataSource(this.client, this.businessId);
 
   static const _table = 'purchase_orders';
   static const _selectWithJoins =
       '*, suppliers(name), purchase_order_items(*, products(name))';
 
-  String get _businessId {
-    final id = client.auth.currentUser?.id;
-    if (id == null) throw ServerException('No authenticated user.');
-    return id;
-  }
 
   Future<List<PurchaseOrderModel>> getPurchaseOrders({
     PurchaseOrderStatus? statusFilter,
@@ -29,7 +25,7 @@ class PurchaseOrderRemoteDataSource {
       var query = client
           .from(_table)
           .select(_selectWithJoins)
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
 
       if (statusFilter != null) {
         query = query.eq('status', statusFilter.dbValue);
@@ -56,7 +52,7 @@ class PurchaseOrderRemoteDataSource {
           .from(_table)
           .select(_selectWithJoins)
           .eq('id', id)
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .single();
       return PurchaseOrderModel.fromJson(row);
     } catch (e) {
@@ -81,6 +77,7 @@ class PurchaseOrderRemoteDataSource {
   }) async {
     try {
       final row = await client.rpc('create_purchase_order', params: {
+        'p_business_id': businessId,
         'p_supplier_id': supplierId,
         'p_po_number': poNumber,
         'p_order_date': orderDate.toIso8601String(),
@@ -105,6 +102,7 @@ class PurchaseOrderRemoteDataSource {
   }) async {
     try {
       await client.rpc('update_purchase_order_draft', params: {
+        'p_business_id': businessId,
         'p_po_id': id,
         'p_supplier_id': supplierId,
         'p_order_date': orderDate.toIso8601String(),
@@ -124,7 +122,7 @@ class PurchaseOrderRemoteDataSource {
           .from(_table)
           .update({'status': 'sent', 'updated_at': DateTime.now().toIso8601String()})
           .eq('id', id)
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
       return getPurchaseOrderById(id);
     } catch (e) {
       throw ServerException(e.toString());
@@ -133,7 +131,7 @@ class PurchaseOrderRemoteDataSource {
 
   Future<PurchaseOrderModel> cancelPurchaseOrder(String id) async {
     try {
-      await client.rpc('cancel_purchase_order', params: {'p_po_id': id});
+      await client.rpc('cancel_purchase_order', params: {'p_business_id': businessId, 'p_po_id': id});
       return getPurchaseOrderById(id);
     } catch (e) {
       throw ServerException(e.toString());
@@ -146,6 +144,7 @@ class PurchaseOrderRemoteDataSource {
   }) async {
     try {
       await client.rpc('receive_purchase_order_items', params: {
+        'p_business_id': businessId,
         'p_po_id': poId,
         'p_receipts': receipts
             .map((r) => {
@@ -165,7 +164,7 @@ class PurchaseOrderRemoteDataSource {
       final rows = await client
           .from(_table)
           .select('status, expected_delivery_date, total_amount')
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .not('status', 'in', '(received,cancelled)');
 
       int openCount = 0;

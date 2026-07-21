@@ -5,22 +5,17 @@ import 'package:traqio/features/products/domain/entities/product.dart';
 
 class ProductRemoteDataSource {
   final SupabaseClient client;
-  const ProductRemoteDataSource(this.client);
+  final String businessId;
+  const ProductRemoteDataSource(this.client, this.businessId);
 
   static const _table = 'products';
-
-  String get _businessId {
-    final id = client.auth.currentUser?.id;
-    if (id == null) throw ServerException('No authenticated user.');
-    return id;
-  }
 
   Future<List<ProductModel>> getProducts() async {
     try {
       final rows = await client
           .from(_table)
           .select()
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .order('created_at', ascending: false);
       return (rows as List)
           .map((row) => ProductModel.fromJson(row as Map<String, dynamic>))
@@ -36,7 +31,7 @@ class ProductRemoteDataSource {
           .from(_table)
           .select()
           .eq('id', id)
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .single();
       return ProductModel.fromJson(row);
     } catch (e) {
@@ -48,7 +43,7 @@ class ProductRemoteDataSource {
     try {
       final payload = ProductModel.fromEntity(product).toJson()
         ..remove('id')
-        ..['business_id'] = _businessId;
+        ..['business_id'] = businessId;
       final row =
           await client.from(_table).insert(payload).select().single();
       return ProductModel.fromJson(row);
@@ -65,7 +60,7 @@ class ProductRemoteDataSource {
           .from(_table)
           .update(payload)
           .eq('id', product.id)
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .select()
           .single();
       return ProductModel.fromJson(row);
@@ -80,7 +75,7 @@ class ProductRemoteDataSource {
           .from(_table)
           .delete()
           .eq('id', id)
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -91,7 +86,7 @@ class ProductRemoteDataSource {
       final rows = await client
           .from(_table)
           .select()
-          .eq('business_id', _businessId)
+          .eq('business_id', businessId)
           .or('name.ilike.%$query%,sku.ilike.%$query%,barcode.ilike.%$query%');
       return (rows as List)
           .map((row) => ProductModel.fromJson(row as Map<String, dynamic>))
@@ -106,7 +101,7 @@ class ProductRemoteDataSource {
       final rows = await client
           .from(_table)
           .select()
-          .eq('business_id', _businessId);
+          .eq('business_id', businessId);
       final all = (rows as List)
           .map((row) => ProductModel.fromJson(row as Map<String, dynamic>))
           .toList();

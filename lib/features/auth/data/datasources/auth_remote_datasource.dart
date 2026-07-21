@@ -34,6 +34,24 @@ class AuthRemoteDataSource {
         'role': 'owner',
       });
 
+      // Every signup creates its own business, with the signing-up
+      // user as its owner member. This is the foundation for
+      // multi-user accounts (Feature 1) — a business is a first-class
+      // entity from day one, not implicitly "whoever signed up."
+      await client.from('businesses').insert({
+        'id': user.id,
+        'name': businessName,
+        'owner_id': user.id,
+      });
+
+      await client.from('business_members').insert({
+        'business_id': user.id,
+        'user_id': user.id,
+        'role': 'owner',
+        'status': 'active',
+        'joined_at': DateTime.now().toIso8601String(),
+      });
+
       return UserModel(
         id: user.id,
         email: email,
