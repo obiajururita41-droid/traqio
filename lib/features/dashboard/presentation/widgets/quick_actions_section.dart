@@ -3,6 +3,7 @@ import 'package:traqio/core/theme/app_spacing.dart';
 import 'package:traqio/features/customers/presentation/screens/customer_list_screen.dart';
 import 'package:traqio/features/invoices/presentation/screens/invoice_list_screen.dart';
 import 'package:traqio/features/payments/presentation/screens/payment_list_screen.dart';
+import 'package:traqio/features/business_members/presentation/screens/team_screen.dart';
 import 'package:traqio/features/products/presentation/screens/product_list_screen.dart';
 import 'package:traqio/features/purchase_orders/presentation/screens/purchase_order_list_screen.dart';
 import 'package:traqio/features/sales_orders/presentation/screens/sales_order_list_screen.dart';
@@ -45,6 +46,9 @@ class QuickActionsSection extends StatelessWidget {
       }),
       _QuickAction(icon: Icons.map_rounded, label: 'Track Shipment', onTap: () => _comingSoon(context, 'Track Shipment')),
       _QuickAction(icon: Icons.bar_chart_rounded, label: 'View Reports', onTap: () => _comingSoon(context, 'View Reports')),
+      _QuickAction(icon: Icons.people_alt_rounded, label: 'Team', onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TeamScreen()));
+      }),
     ];
 
     return Container(

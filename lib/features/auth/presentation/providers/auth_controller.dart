@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:traqio/core/errors/failures.dart';
 import 'package:traqio/features/auth/domain/entities/app_user.dart';
 import 'package:traqio/features/auth/presentation/providers/auth_providers.dart';
+import 'package:traqio/features/business_members/presentation/providers/business_member_providers.dart';
 
 /// Represents the state of an in-progress or completed auth action
 /// (sign in / sign up). The UI reacts to this to show loading
@@ -42,7 +43,10 @@ class AuthController extends StateNotifier<AuthActionState> {
 
     result.match(
       (failure) => state = AuthActionError(failure),
-      (user) => state = AuthActionSuccess(user),
+      (user) async {
+        state = AuthActionSuccess(user);
+        await ref.read(attachPendingInvitesUseCaseProvider)();
+      },
     );
   }
 
@@ -63,7 +67,10 @@ class AuthController extends StateNotifier<AuthActionState> {
 
     result.match(
       (failure) => state = AuthActionError(failure),
-      (user) => state = AuthActionSuccess(user),
+      (user) async {
+        state = AuthActionSuccess(user);
+        await ref.read(attachPendingInvitesUseCaseProvider)();
+      },
     );
   }
 
